@@ -1,7 +1,6 @@
 package com.vlad.junit.service;
 
 import com.vlad.junit.dto.User;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 
 import java.util.Map;
@@ -54,9 +53,26 @@ public class UserServiceTest {
 
         Optional<User> maybeUser = userService.login(IVAN.getUsername(), IVAN.getPassword());
 
-        assertThat(maybeUser).isPresent();
 //        assertTrue(maybeUser.isPresent());
+        assertThat(maybeUser).isPresent();
         maybeUser.ifPresent(user -> assertThat(user).isEqualTo(IVAN));
+    }
+
+    @Test
+    void throwExceptionIfUsernameOrPasswordIsNull() {
+        assertAll(
+                () -> assertThrows(IllegalArgumentException.class, () -> userService.login(null, "dummy")),
+                () -> assertThrows(IllegalArgumentException.class, () -> userService.login("dummy", null))
+        );
+
+//        try {
+//            userService.login(null, "dummy");
+//            Assertions.fail("login should throw exception on null username");
+//        } catch (IllegalArgumentException ex) {
+//            assertTrue(true);
+//        }
+
+
     }
 
     @Test
