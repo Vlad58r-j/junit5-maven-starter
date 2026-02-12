@@ -25,7 +25,7 @@ public class UserServiceTest {
     void usersEmptyIfNotUserAdded() {
         System.out.println("Test 1: " + this);
         var users = userService.getAll();
-        assertTrue(users.isEmpty(), () -> "User list should be empty");//assertFalse
+        assertTrue(users.isEmpty(), "User list should be empty");//assertFalse
     }
 
     @Test
@@ -35,7 +35,7 @@ public class UserServiceTest {
         userService.add(new User());
 
         var users = userService.getAll();
-        assertEquals(2, users.size());
+        assertEquals(4, users.size());
     }
 
     @AfterEach
