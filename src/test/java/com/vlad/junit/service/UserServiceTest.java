@@ -1,10 +1,13 @@
 package com.vlad.junit.service;
 
 import com.vlad.junit.dto.User;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 
+import java.util.Map;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -40,16 +43,32 @@ public class UserServiceTest {
         userService.add(PETR);
 
         var users = userService.getAll();
-        assertEquals(2, users.size());
+
+        assertThat(users).hasSize(2);
+//        assertEquals(2, users.size());
     }
 
     @Test
     void loginSuccessIfUserExists() {
         userService.add(IVAN);
+
         Optional<User> maybeUser = userService.login(IVAN.getUsername(), IVAN.getPassword());
 
-        assertTrue(maybeUser.isPresent());
-        maybeUser.ifPresent(user -> assertEquals(IVAN, user));
+        assertThat(maybeUser).isPresent();
+//        assertTrue(maybeUser.isPresent());
+        maybeUser.ifPresent(user -> assertThat(user).isEqualTo(IVAN));
+    }
+
+    @Test
+    void usersConvertedToMapById() {
+        userService.add(IVAN, PETR);
+
+        Map<Integer, User> users = userService.getAllConvertedById();
+
+        assertAll(
+                () -> assertThat(users).containsKeys(IVAN.getId(), PETR.getId()),
+                () -> assertThat(users).containsValues(IVAN, PETR)
+        );
     }
 
     @Test
