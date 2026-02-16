@@ -1,12 +1,14 @@
 package com.vlad.junit.service;
 
 import com.vlad.junit.TestBase;
+import com.vlad.junit.dao.UserDao;
 import com.vlad.junit.dto.User;
 import com.vlad.junit.extension.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -24,11 +26,12 @@ import static org.junit.jupiter.api.Assertions.*;
         UserServiceParamResolver.class,
         PostProcessingExtension.class,
         ConditionalExtension.class,
-        ThrowableExtension.class
+//        ThrowableExtension.class
 })
 public class UserServiceTest extends TestBase {
 
     private UserService userService;
+    private UserDao userDao;
 
     UserServiceTest(TestInfo testInfo) {
         System.out.println();
@@ -43,9 +46,21 @@ public class UserServiceTest extends TestBase {
     }
 
     @BeforeEach
-    void prepare(UserService userService) {
+    void prepare() {
         System.out.println("Before each: " + this);
-        this.userService = new UserService();
+        this.userDao = Mockito.mock(UserDao.class);
+        this.userService = new UserService(userDao);
+    }
+
+    @Test
+    void shouldDeleteExistedUser() {
+        userService.add(IVAN);
+        Mockito.doReturn(true).when(userDao).delete(IVAN.getId());//stub
+//        Mockito.doReturn(true).when(userDao).delete(Mockito.any()); -> mock
+
+        var deleteResult = userService.delete(IVAN.getId());
+
+        assertThat(deleteResult).isTrue();
     }
 
     @Test
