@@ -1,7 +1,9 @@
 package com.vlad.junit.service;
 
 import com.vlad.junit.dto.User;
+import com.vlad.junit.paramresolver.UserServiceParamResolver;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Map;
 import java.util.Optional;
@@ -12,9 +14,17 @@ import static org.junit.jupiter.api.Assertions.*;
 @Tag("fast")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@ExtendWith({
+        UserServiceParamResolver.class
+})
 public class UserServiceTest {
 
     private UserService userService;
+
+    UserServiceTest(TestInfo testInfo) {
+        System.out.println();
+    }
+
     private static final User IVAN = User.of(1, "Ivan", "123");
     private static final User PETR = User.of(2, "Petr", "456");
 
@@ -24,9 +34,9 @@ public class UserServiceTest {
     }
 
     @BeforeEach
-    void prepare() {
+    void prepare(UserService userService) {
         System.out.println("Before each: " + this);
-        userService = new UserService();
+        this.userService = new UserService();
     }
 
     @Test
