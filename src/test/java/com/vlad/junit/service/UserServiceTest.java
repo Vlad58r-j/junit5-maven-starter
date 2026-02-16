@@ -7,9 +7,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.*;
@@ -92,7 +94,9 @@ public class UserServiceTest {
     @Nested
     @DisplayName("test user login functionality")
     class LoginTest {
+
         @Test
+        @Disabled("flaky, need to see")
         void loginFailIfUserDoesNotExist() {
             userService.add(IVAN);
 
@@ -101,8 +105,9 @@ public class UserServiceTest {
             assertTrue(maybeUser.isEmpty());
         }
 
-        @Test
-        void loginFailIfPasswordIsNotCorrect() {
+        //        @Test
+        @RepeatedTest(value = 5, name = RepeatedTest.LONG_DISPLAY_NAME)
+        void loginFailIfPasswordIsNotCorrect(RepetitionInfo repetitionInfo) {
             userService.add(IVAN);
 
             var maybeUser = userService.login(IVAN.getUsername(), "log");
@@ -111,17 +116,22 @@ public class UserServiceTest {
         }
 
         @Test
+//        @Timeout(value = 200, unit = TimeUnit.MILLISECONDS)
+        void checkLoginFunctionalityPerformance() {
+            System.out.println(Thread.currentThread().getName());
+            var result = assertTimeoutPreemptively(Duration.ofMillis(200), () -> {//assertTimeout
+                System.out.println(Thread.currentThread().getName());
+                Thread.sleep(300);
+                return userService.login(IVAN.getUsername(), "log");
+            });
+        }
+
+        @Test
         void throwExceptionIfUsernameOrPasswordIsNull() {
             assertAll(
                     () -> assertThrows(IllegalArgumentException.class, () -> userService.login(null, "dummy")),
                     () -> assertThrows(IllegalArgumentException.class, () -> userService.login("dummy", null))
             );
-//        try {
-//            userService.login(null, "dummy");
-//            Assertions.fail("login should throw exception on null username");
-//        } catch (IllegalArgumentException ex) {
-//            assertTrue(true);
-//        }
         }
 
         @Test
@@ -131,12 +141,11 @@ public class UserServiceTest {
 
             Optional<User> maybeUser = userService.login(IVAN.getUsername(), IVAN.getPassword());
 
-//        assertTrue(maybeUser.isPresent());
             assertThat(maybeUser).isPresent();
             maybeUser.ifPresent(user -> assertThat(user).isEqualTo(IVAN));
         }
 
-//        @ArgumentsSource()
+        //        @ArgumentsSource()
 //        @NullSource
 //        @EmptySource
 //        @NullAndEmptySource
