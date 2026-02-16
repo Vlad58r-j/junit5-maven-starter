@@ -1,4 +1,4 @@
-package com.vlad.junit.paramresolver;
+package com.vlad.junit.extension;
 
 import com.vlad.junit.service.UserService;
 import org.junit.jupiter.api.extension.ExtensionContext;

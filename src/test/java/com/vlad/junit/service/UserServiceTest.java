@@ -1,17 +1,17 @@
 package com.vlad.junit.service;
 
+import com.vlad.junit.TestBase;
 import com.vlad.junit.dto.User;
-import com.vlad.junit.paramresolver.UserServiceParamResolver;
+import com.vlad.junit.extension.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.*;
@@ -21,9 +21,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ExtendWith({
-        UserServiceParamResolver.class
+        UserServiceParamResolver.class,
+        PostProcessingExtension.class,
+        ConditionalExtension.class,
+        ThrowableExtension.class
 })
-public class UserServiceTest {
+public class UserServiceTest extends TestBase {
 
     private UserService userService;
 
@@ -47,7 +50,10 @@ public class UserServiceTest {
 
     @Test
     @Order(1)
-    void usersEmptyIfNotUserAdded() {
+    void usersEmptyIfNotUserAdded() throws IOException {
+        if (true) {
+            throw new RuntimeException();
+        }
         System.out.println("Test 1: " + this);
         var users = userService.getAll();
         assertTrue(users.isEmpty(), "User list should be empty");//assertFalse
@@ -121,7 +127,7 @@ public class UserServiceTest {
             System.out.println(Thread.currentThread().getName());
             var result = assertTimeoutPreemptively(Duration.ofMillis(200), () -> {//assertTimeout
                 System.out.println(Thread.currentThread().getName());
-                Thread.sleep(300);
+//                Thread.sleep(300);
                 return userService.login(IVAN.getUsername(), "log");
             });
         }
