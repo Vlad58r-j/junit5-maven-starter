@@ -8,6 +8,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -48,7 +49,8 @@ public class UserServiceTest extends TestBase {
     @BeforeEach
     void prepare() {
         System.out.println("Before each: " + this);
-        this.userDao = Mockito.mock(UserDao.class);
+//        this.userDao = Mockito.mock(UserDao.class);
+        this.userDao = Mockito.spy(new UserDao());
         this.userService = new UserService(userDao);
     }
 
@@ -56,9 +58,19 @@ public class UserServiceTest extends TestBase {
     void shouldDeleteExistedUser() {
         userService.add(IVAN);
         Mockito.doReturn(true).when(userDao).delete(IVAN.getId());//stub
-//        Mockito.doReturn(true).when(userDao).delete(Mockito.any()); -> mock
+//        Mockito.doReturn(true).when(userDao).delete(Mockito.any());// -> mock
+
+//        Mockito.when(userDao.delete(IVAN.getId()))
+//                .thenReturn(true)
+//                .thenReturn(false);
 
         var deleteResult = userService.delete(IVAN.getId());
+        System.out.println(userService.delete(IVAN.getId()));
+
+        var argumentCaptor = ArgumentCaptor.forClass(Integer.class);
+        Mockito.verify(userDao, Mockito.times(2)).delete(argumentCaptor.capture());
+
+        assertThat(argumentCaptor.getValue()).isEqualTo(25);
 
         assertThat(deleteResult).isTrue();
     }
@@ -100,16 +112,7 @@ public class UserServiceTest extends TestBase {
         );
     }
 
-    @AfterEach
-    void deleteDataFromDataBase() {
-        System.out.println("After each: " + this);
-        System.out.println();
-    }
 
-    @AfterAll
-    void closeConnectionPool() {
-        System.out.println("After all: " + this);
-    }
 
     @Tag("login")
     @Nested
@@ -196,5 +199,16 @@ public class UserServiceTest extends TestBase {
                 Arguments.of("Petr", "dummy", Optional.empty()),
                 Arguments.of("dummy", "123", Optional.empty())
         );
+    }
+
+    @AfterEach
+    void deleteDataFromDataBase() {
+        System.out.println("After each: " + this);
+        System.out.println();
+    }
+
+    @AfterAll
+    void closeConnectionPool() {
+        System.out.println("After all: " + this);
     }
 }
